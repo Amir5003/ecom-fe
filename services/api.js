@@ -55,13 +55,23 @@ api.interceptors.response.use(
       return handleMockError(error);
     }
     
-    // If token expired, clear it
+    // If token expired, clear it and redirect to login
+    // BUT: Don't redirect if we're already on the login/register/verify page
     if (error.response?.status === 401) {
-      deleteCookie('jwt_token');
-      deleteCookie('user_data');
-      // Optionally redirect to login
-      if (typeof window !== 'undefined') {
-        window.location.href = '/auth/login';
+      // Check if this is a login/register/verify endpoint call (not a token expiry issue)
+      const isAuthEndpoint = error.config?.url?.includes('/api/auth/');
+      const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+      const isAuthPage = currentPath.includes('/auth/');
+      
+      // Only redirect if:
+      // 1. It's NOT an auth endpoint call (token expiry during normal operations)
+      // 2. We're NOT already on an auth page
+      if (!isAuthEndpoint && !isAuthPage) {
+        deleteCookie('jwt_token');
+        deleteCookie('user_data');
+        if (typeof window !== 'undefined') {
+          window.location.href = '/auth/login';
+        }
       }
     }
     return Promise.reject(error);
@@ -75,7 +85,8 @@ export const authService = {
   register: (data) => api.post(API_ENDPOINTS.AUTH.REGISTER, data),
   login: (data) => api.post(API_ENDPOINTS.AUTH.LOGIN, data),
   logout: () => api.post(API_ENDPOINTS.AUTH.LOGOUT),
-  verifyEmail: (token) => api.get(`${API_ENDPOINTS.AUTH.VERIFY_EMAIL}?token=${token}`),
+  verifyEmail: (email, verificationCode) => api.post(API_ENDPOINTS.AUTH.VERIFY_EMAIL, { email, verificationCode }),
+  resendVerificationCode: (email) => api.post(`${API_ENDPOINTS.AUTH.VERIFY_EMAIL}/resend`, { email }),
   vendorSetup: (data) => api.post(API_ENDPOINTS.AUTH.VENDOR_SETUP, data),
 };
 

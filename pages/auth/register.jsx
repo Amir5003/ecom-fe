@@ -53,7 +53,9 @@ const Register = () => {
       }
 
       const { data } = await authService.register(payload);
-      toast.success('Registration successful! Please check your email to verify.');
+      // Save email to localStorage for verification page
+      localStorage.setItem('verificationEmail', formData.email);
+      toast.success(data.ackMessage || 'Registration successful! Please check your email to verify.');
       router.push('/auth/verify-email');
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Registration failed';

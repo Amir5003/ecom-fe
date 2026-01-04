@@ -1,6 +1,6 @@
 /**
  * Email Verification Page
- * Handles token-based email verification from the verification link
+ * Handles OTP-based email verification with 6-digit code
  */
 
 import { useState, useEffect } from 'react';
@@ -13,6 +13,7 @@ import {
   Alert,
   CircularProgress,
   Link as MUILink,
+  TextField,
 } from '@mui/material';
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
@@ -24,34 +25,108 @@ import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
 const VerifyEmail = () => {
   const router = useRouter();
-  const { token } = router.query;
-  const [loading, setLoading] = useState(true);
+  const [email, setEmail] = useState('');
+  const [otp, setOtp] = useState('');
+  const [loading, setLoading] = useState(false);
   const [verified, setVerified] = useState(false);
   const [error, setError] = useState('');
+  const [pageLoading, setPageLoading] = useState(true);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendTimer, setResendTimer] = useState(0);
 
   useEffect(() => {
-    if (token) {
-      verifyEmailToken(token);
+    // Get email from localStorage (set during registration or login)
+    const storedEmail = localStorage.getItem('verificationEmail');
+    if (storedEmail) {
+      setEmail(storedEmail);
+      // Auto-send OTP when page loads - this ensures user has the latest code
+      autoSendOtp(storedEmail);
+    } else {
+      // Redirect to register if no email found
+      router.push('/auth/register');
     }
-  }, [token]);
+  }, [router]);
 
-  const verifyEmailToken = async (verificationToken) => {
+  // Auto-send OTP when page loads
+  const autoSendOtp = async (userEmail) => {
+    try {
+      console.log('Auto-sending OTP to:', userEmail);
+      const { data } = await authService.resendVerificationCode(userEmail);
+      console.log('OTP auto-sent successfully:', data);
+      toast.success('Verification code sent to your email');
+      setPageLoading(false);
+      setResendTimer(60); // Start cooldown timer
+    } catch (err) {
+      console.error('Failed to auto-send OTP:', err);
+      const errorMessage = err.response?.data?.ackMessage || err.response?.data?.message || 'Failed to send verification code. Please try again.';
+      setError(errorMessage);
+      setPageLoading(false);
+      toast.error(errorMessage);
+    }
+  };
+
+  // Countdown timer for resend button
+  useEffect(() => {
+    let interval;
+    if (resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [resendTimer]);
+
+  const handleOtpChange = (e) => {
+    const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+    setOtp(value);
+    setError('');
+
+    // Auto-submit when 6 digits are entered
+    if (value.length === 6) {
+      verifyOtp(value);
+    }
+  };
+
+  const verifyOtp = async (code = otp) => {
+    if (!code || code.length !== 6) {
+      setError('Please enter a valid 6-digit code');
+      return;
+    }
+
     try {
       setLoading(true);
-      await authService.verifyEmail(verificationToken);
+      const { data } = await authService.verifyEmail(email, code);
       setVerified(true);
-      toast.success('Email verified successfully!');
+      toast.success(data.ackMessage || 'Email verified successfully!');
+      localStorage.removeItem('verificationEmail');
 
       // Redirect to login after 3 seconds
       setTimeout(() => {
         router.push('/auth/login');
       }, 3000);
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Email verification failed. Please try again.';
+      const errorMessage = err.response?.data?.ackMessage || err.response?.data?.message || 'Email verification failed. Please try again.';
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    try {
+      setResendLoading(true);
+      const { data } = await authService.resendVerificationCode(email);
+      toast.success(data.ackMessage || 'Verification code resent to your email!');
+      setOtp(''); // Clear the input
+      setError(''); // Clear any errors
+      setResendTimer(60); // Start 60 second cooldown
+    } catch (err) {
+      const errorMessage = err.response?.data?.ackMessage || err.response?.data?.message || 'Failed to resend code. Please try again.';
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -69,8 +144,8 @@ const VerifyEmail = () => {
               border: '1px solid #e0e0e0',
             }}
           >
-            {/* Loading State */}
-            {loading && (
+            {/* Loading State - Page Load */}
+            {pageLoading && (
               <Box sx={{ textAlign: 'center' }}>
                 <CircularProgress
                   size={80}
@@ -87,16 +162,157 @@ const VerifyEmail = () => {
                     mb: 1,
                   }}
                 >
-                  Verifying Your Email...
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  Please wait while we verify your email address.
+                  Loading...
                 </Typography>
               </Box>
             )}
 
+            {/* OTP Input State */}
+            {!pageLoading && !verified && (
+              <Box sx={{ textAlign: 'center' }}>
+                <MailOutlineIcon
+                  sx={{
+                    fontSize: 100,
+                    color: '#4CAF50',
+                    mb: 2,
+                  }}
+                />
+                <Typography
+                  variant="h4"
+                  sx={{
+                    fontWeight: 700,
+                    mb: 1,
+                    color: '#333',
+                  }}
+                >
+                  Verify Your Email
+                </Typography>
+                <Typography variant="body1" color="textSecondary" sx={{ mb: 3 }}>
+                  We've sent a 6-digit code to <strong>{email}</strong>
+                </Typography>
+
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="body2" color="textSecondary" sx={{ mb: 2, textAlign: 'left' }}>
+                    Enter the 6-digit code:
+                  </Typography>
+                  <TextField
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="000000"
+                    value={otp}
+                    onChange={handleOtpChange}
+                    disabled={loading}
+                    fullWidth
+                    autoFocus
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        fontSize: '2rem',
+                        fontWeight: 600,
+                        letterSpacing: '0.5rem',
+                        textAlign: 'center',
+                        py: 2,
+                        fontFamily: 'monospace',
+                      },
+                      '& input::placeholder': {
+                        opacity: 0.5,
+                        color: '#999',
+                      },
+                    }}
+                  />
+                </Box>
+
+                {error && (
+                  <Alert
+                    severity="error"
+                    sx={{
+                      backgroundColor: '#ffebee',
+                      color: '#c62828',
+                      mb: 2,
+                      '& .MuiAlert-icon': {
+                        color: '#f44336',
+                      },
+                    }}
+                  >
+                    {error}
+                  </Alert>
+                )}
+
+                <Alert
+                  severity="info"
+                  sx={{
+                    backgroundColor: '#e3f2fd',
+                    color: '#1976d2',
+                    mb: 3,
+                    '& .MuiAlert-icon': {
+                      color: '#2196f3',
+                    },
+                  }}
+                >
+                  The code will be auto-verified once you enter all 6 digits.
+                </Alert>
+
+                <Button
+                  variant="contained"
+                  fullWidth
+                  onClick={() => verifyOtp()}
+                  disabled={loading || otp.length !== 6}
+                  sx={{
+                    backgroundColor: '#4CAF50',
+                    color: '#fff',
+                    py: 1.5,
+                    fontSize: '1rem',
+                    fontWeight: 600,
+                    '&:hover': {
+                      backgroundColor: '#45a049',
+                    },
+                    '&:disabled': {
+                      backgroundColor: '#cccccc',
+                      color: '#666666',
+                    },
+                  }}
+                >
+                  {loading ? (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <CircularProgress size={20} sx={{ color: '#fff' }} />
+                      Verifying...
+                    </Box>
+                  ) : (
+                    'Verify Code'
+                  )}
+                </Button>
+
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="body2" color="textSecondary" sx={{ textAlign: 'center', mb: 1 }}>
+                    Didn&apos;t receive the code?
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    onClick={handleResendOtp}
+                    disabled={resendLoading || resendTimer > 0}
+                    sx={{
+                      borderColor: '#4CAF50',
+                      color: '#4CAF50',
+                      py: 1,
+                      fontSize: '0.9rem',
+                      fontWeight: 600,
+                      '&:hover': {
+                        backgroundColor: '#f1f8f4',
+                      },
+                      '&:disabled': {
+                        borderColor: '#ccc',
+                        color: '#999',
+                      },
+                    }}
+                  >
+                    {resendLoading ? 'Sending...' : resendTimer > 0 ? `Resend in ${resendTimer}s` : 'Resend Code'}
+                  </Button>
+                </Box>
+              </Box>
+            )}
+
             {/* Success State */}
-            {verified && !loading && (
+            {verified && !pageLoading && (
               <Box sx={{ textAlign: 'center' }}>
                 <CheckCircleIcon
                   sx={{
@@ -145,168 +361,6 @@ const VerifyEmail = () => {
                 >
                   Redirecting to login page in a moment...
                 </Alert>
-
-                <Button
-                  variant="contained"
-                  fullWidth
-                  onClick={() => router.push('/auth/login')}
-                  sx={{
-                    backgroundColor: '#4CAF50',
-                    color: '#fff',
-                    py: 1.5,
-                    fontSize: '1rem',
-                    fontWeight: 600,
-                    '&:hover': {
-                      backgroundColor: '#45a049',
-                    },
-                  }}
-                >
-                  Go to Login
-                </Button>
-              </Box>
-            )}
-
-            {/* Error State */}
-            {error && !loading && (
-              <Box sx={{ textAlign: 'center' }}>
-                <ErrorOutlineIcon
-                  sx={{
-                    fontSize: 100,
-                    color: '#f44336',
-                    mb: 2,
-                  }}
-                />
-                <Typography
-                  variant="h4"
-                  sx={{
-                    fontWeight: 700,
-                    mb: 1,
-                    color: '#d32f2f',
-                  }}
-                >
-                  Verification Failed
-                </Typography>
-                <Typography variant="body1" color="textSecondary" sx={{ mb: 3 }}>
-                  We couldn't verify your email address.
-                </Typography>
-
-                <Alert
-                  severity="error"
-                  sx={{
-                    backgroundColor: '#ffebee',
-                    color: '#c62828',
-                    mb: 3,
-                    textAlign: 'left',
-                    '& .MuiAlert-icon': {
-                      color: '#f44336',
-                    },
-                  }}
-                >
-                  <strong>Error:</strong> {error}
-                </Alert>
-
-                <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
-                  <Button
-                    variant="contained"
-                    fullWidth
-                    onClick={() => router.push('/auth/register')}
-                    sx={{
-                      backgroundColor: '#4CAF50',
-                      color: '#fff',
-                      py: 1.5,
-                      fontSize: '1rem',
-                      fontWeight: 600,
-                      '&:hover': {
-                        backgroundColor: '#45a049',
-                      },
-                    }}
-                  >
-                    Try Registering Again
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    fullWidth
-                    onClick={() => router.push('/auth/login')}
-                    sx={{
-                      borderColor: '#4CAF50',
-                      color: '#4CAF50',
-                      py: 1.5,
-                      fontSize: '1rem',
-                      fontWeight: 600,
-                      '&:hover': {
-                        backgroundColor: '#f1f8f4',
-                      },
-                    }}
-                  >
-                    Back to Login
-                  </Button>
-                </Box>
-              </Box>
-            )}
-
-            {/* Pending State (No token provided) */}
-            {!token && !loading && !verified && !error && (
-              <Box sx={{ textAlign: 'center' }}>
-                <MailOutlineIcon
-                  sx={{
-                    fontSize: 100,
-                    color: '#4CAF50',
-                    mb: 2,
-                  }}
-                />
-                <Typography
-                  variant="h4"
-                  sx={{
-                    fontWeight: 700,
-                    mb: 2,
-                    color: '#333',
-                  }}
-                >
-                  Check Your Email
-                </Typography>
-                <Typography variant="body1" color="textSecondary" sx={{ mb: 3, lineHeight: 1.7 }}>
-                  We've sent a verification link to your email address.
-                  <br />
-                  <br />
-                  <strong>Please click the verification link</strong> in the email to complete your registration.
-                </Typography>
-
-                <Alert
-                  severity="info"
-                  sx={{
-                    backgroundColor: '#e3f2fd',
-                    color: '#1976d2',
-                    mb: 3,
-                    '& .MuiAlert-icon': {
-                      color: '#2196f3',
-                    },
-                  }}
-                >
-                  <strong>Tip:</strong> The link will expire in 24 hours. If you don't see the email, check your spam folder.
-                </Alert>
-
-                <Box sx={{ p: 2, backgroundColor: '#f5f5f5', borderRadius: '8px', mb: 3 }}>
-                  <Typography variant="caption" color="textSecondary" sx={{ display: 'block' }}>
-                    The verification email contains a secure link that will look like:
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      display: 'block',
-                      mt: 1,
-                      fontFamily: 'monospace',
-                      fontSize: '0.8rem',
-                      wordBreak: 'break-all',
-                      color: '#666',
-                    }}
-                  >
-                    http://localhost:3000/auth/verify-email?token=xxxxx
-                  </Typography>
-                </Box>
-
-                <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-                  Already verified?
-                </Typography>
 
                 <Button
                   variant="contained"

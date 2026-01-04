@@ -6,12 +6,12 @@
 
 const DOMAINS = {
   LOCAL: 'http://localhost:5001',
-  STAGING: 'https://api-staging.example.com',
+  STAGING: 'https://ecom-vendors.onrender.com',
   PRODUCTION: 'https://api.example.com',
 };
 
 // Change this to switch between environments
-const CURRENT_DOMAIN = DOMAINS.LOCAL;
+const CURRENT_DOMAIN = DOMAINS.STAGING;
 
 const API_BASE_URL = `${CURRENT_DOMAIN}/api`;
 

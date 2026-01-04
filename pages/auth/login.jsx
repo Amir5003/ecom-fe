@@ -30,28 +30,41 @@ const Login = () => {
     try {
       const { data } = await authService.login(formData);
       
-      // Backend returns user data directly with token at root level
+      // Backend returns user data in data.data with new response format
+      const userData = data.data || data; // Handle both old and new format
       const user = {
-        _id: data._id,
-        name: data.name,
-        email: data.email,
-        role: data.role,
-        vendorSlug: data.vendorSlug,
+        _id: userData._id,
+        name: userData.name,
+        email: userData.email,
+        role: userData.role,
+        vendorSlug: userData.vendorSlug,
       };
       
-      setUser(user, data.token);
-      toast.success('Login successful!');
+      setUser(user, userData.token);
+      toast.success(data.ackMessage || 'Login successful!');
 
       // Redirect based on role
-      if (data.role === 'vendor') {
+      if (userData.role === 'vendor') {
         router.push('/vendor/dashboard');
-      } else if (data.role === 'admin') {
+      } else if (userData.role === 'admin') {
         router.push('/admin/dashboard');
       } else {
         router.push('/');
       }
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Login failed';
+      const errorMessage = err.response?.data?.ackMessage || err.response?.data?.message || 'Login failed';
+      
+      // Check if error is due to unverified email
+      if (err.response?.status === 401 && errorMessage && errorMessage.toLowerCase().includes('verify')) {
+        // Save email to localStorage and redirect to verify page
+        localStorage.setItem('verificationEmail', formData.email);
+        toast.error('Please verify your email first');
+        // Use replace to prevent going back to login
+        router.replace('/auth/verify-email');
+        return;
+      }
+      
+      // For other errors
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
