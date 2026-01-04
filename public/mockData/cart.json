@@ -1,0 +1,91 @@
+{
+  "cartItems": [
+    {
+      "_id": "cart_001",
+      "product": {
+        "_id": "prod_001",
+        "name": "Fresh Tomatoes",
+        "price": 45,
+        "image": "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=500",
+        "category": "vegetables"
+      },
+      "vendor": {
+        "_id": "vendor_001",
+        "businessName": "Fresh Farms Co.",
+        "slug": "fresh-farms-co"
+      },
+      "quantity": 2,
+      "subtotal": 90
+    },
+    {
+      "_id": "cart_002",
+      "product": {
+        "_id": "prod_002",
+        "name": "Organic Carrots",
+        "price": 55,
+        "image": "https://images.unsplash.com/photo-1584622181563-430f63602d4b?w=500",
+        "category": "vegetables"
+      },
+      "vendor": {
+        "_id": "vendor_002",
+        "businessName": "Organic Valley",
+        "slug": "organic-valley"
+      },
+      "quantity": 1,
+      "subtotal": 55
+    }
+  ],
+  "cartSummary": [
+    {
+      "vendor": {
+        "_id": "vendor_001",
+        "businessName": "Fresh Farms Co.",
+        "slug": "fresh-farms-co",
+        "logo": "🌾"
+      },
+      "items": [
+        {
+          "_id": "cart_001",
+          "product": {
+            "_id": "prod_001",
+            "name": "Fresh Tomatoes",
+            "price": 45,
+            "image": "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=500"
+          },
+          "quantity": 2,
+          "subtotal": 90
+        }
+      ],
+      "subtotal": 90,
+      "commission": 9,
+      "netTotal": 81
+    },
+    {
+      "vendor": {
+        "_id": "vendor_002",
+        "businessName": "Organic Valley",
+        "slug": "organic-valley",
+        "logo": "🥕"
+      },
+      "items": [
+        {
+          "_id": "cart_002",
+          "product": {
+            "_id": "prod_002",
+            "name": "Organic Carrots",
+            "price": 55,
+            "image": "https://images.unsplash.com/photo-1584622181563-430f63602d4b?w=500"
+          },
+          "quantity": 1,
+          "subtotal": 55
+        }
+      ],
+      "subtotal": 55,
+      "commission": 6.6,
+      "netTotal": 48.4
+    }
+  ],
+  "totalPrice": 145,
+  "totalItems": 3,
+  "isEmpty": false
+}

@@ -1,0 +1,342 @@
+{
+  "categories": [
+    {
+      "id": "vegetables",
+      "name": "Vegetables",
+      "icon": "🥬",
+      "description": "Fresh vegetables from farms"
+    },
+    {
+      "id": "fruits",
+      "name": "Fruits",
+      "icon": "🍎",
+      "description": "Fresh & seasonal fruits"
+    },
+    {
+      "id": "dairy",
+      "name": "Dairy & Eggs",
+      "icon": "🥛",
+      "description": "Milk, cheese, yogurt & eggs"
+    },
+    {
+      "id": "bakery",
+      "name": "Bakery & Grains",
+      "icon": "🥖",
+      "description": "Bread, rice, flour & grains"
+    },
+    {
+      "id": "meat",
+      "name": "Meat & Fish",
+      "icon": "🍗",
+      "description": "Fresh meat, poultry & fish"
+    },
+    {
+      "id": "spices",
+      "name": "Spices & Condiments",
+      "icon": "🌶️",
+      "description": "Spices, sauces & condiments"
+    },
+    {
+      "id": "snacks",
+      "name": "Snacks & Beverages",
+      "icon": "🍿",
+      "description": "Snacks, tea, coffee & drinks"
+    },
+    {
+      "id": "organic",
+      "name": "Organic & Health",
+      "icon": "🌿",
+      "description": "100% organic & healthy products"
+    }
+  ],
+  "products": [
+    {
+      "_id": "prod_001",
+      "name": "Fresh Tomatoes",
+      "description": "Juicy red tomatoes picked fresh from our farms",
+      "price": 45,
+      "category": "vegetables",
+      "categoryName": "Vegetables",
+      "stock": 150,
+      "vendor": {
+        "_id": "vendor_001",
+        "businessName": "Fresh Farms Co.",
+        "slug": "fresh-farms-co",
+        "businessType": "organic_farm",
+        "logo": "🌾",
+        "rating": 4.8,
+        "reviewCount": 245
+      },
+      "image": "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=500",
+      "rating": 4.7,
+      "reviewCount": 89,
+      "tags": ["fresh", "organic", "seasonal"],
+      "createdAt": "2024-12-01T10:00:00Z",
+      "updatedAt": "2025-01-04T10:00:00Z"
+    },
+    {
+      "_id": "prod_002",
+      "name": "Organic Carrots",
+      "description": "Sweet and crunchy organic carrots without pesticides",
+      "price": 55,
+      "category": "vegetables",
+      "categoryName": "Vegetables",
+      "stock": 200,
+      "vendor": {
+        "_id": "vendor_002",
+        "businessName": "Organic Valley",
+        "slug": "organic-valley",
+        "businessType": "organic_farm",
+        "logo": "🥕",
+        "rating": 4.6,
+        "reviewCount": 189
+      },
+      "image": "https://images.unsplash.com/photo-1584622181563-430f63602d4b?w=500",
+      "rating": 4.8,
+      "reviewCount": 125,
+      "tags": ["organic", "certified", "healthy"],
+      "createdAt": "2024-12-02T10:00:00Z",
+      "updatedAt": "2025-01-04T10:00:00Z"
+    },
+    {
+      "_id": "prod_003",
+      "name": "Fresh Spinach",
+      "description": "Leafy green spinach packed with nutrients",
+      "price": 35,
+      "category": "vegetables",
+      "categoryName": "Vegetables",
+      "stock": 180,
+      "vendor": {
+        "_id": "vendor_003",
+        "businessName": "Village Greens",
+        "slug": "village-greens",
+        "businessType": "general_store",
+        "logo": "🥗",
+        "rating": 4.7,
+        "reviewCount": 312
+      },
+      "image": "https://images.unsplash.com/photo-1599599810694-f3a5150db220?w=500",
+      "rating": 4.6,
+      "reviewCount": 78,
+      "tags": ["leafy", "fresh", "healthy"],
+      "createdAt": "2024-12-03T10:00:00Z",
+      "updatedAt": "2025-01-04T10:00:00Z"
+    },
+    {
+      "_id": "prod_004",
+      "name": "Fresh Apples",
+      "description": "Crisp red apples rich in vitamins",
+      "price": 80,
+      "category": "fruits",
+      "categoryName": "Fruits",
+      "stock": 200,
+      "vendor": {
+        "_id": "vendor_001",
+        "businessName": "Fresh Farms Co.",
+        "slug": "fresh-farms-co",
+        "businessType": "organic_farm",
+        "logo": "🌾",
+        "rating": 4.8,
+        "reviewCount": 245
+      },
+      "image": "https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=500",
+      "rating": 4.9,
+      "reviewCount": 156,
+      "tags": ["fresh", "fruits", "healthy"],
+      "createdAt": "2024-12-04T10:00:00Z",
+      "updatedAt": "2025-01-04T10:00:00Z"
+    },
+    {
+      "_id": "prod_005",
+      "name": "Organic Bananas",
+      "description": "Fresh yellow bananas rich in potassium",
+      "price": 40,
+      "category": "fruits",
+      "categoryName": "Fruits",
+      "stock": 250,
+      "vendor": {
+        "_id": "vendor_003",
+        "businessName": "Village Greens",
+        "slug": "village-greens",
+        "businessType": "general_store",
+        "logo": "🥗",
+        "rating": 4.7,
+        "reviewCount": 312
+      },
+      "image": "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=500",
+      "rating": 4.7,
+      "reviewCount": 103,
+      "tags": ["organic", "fruits", "healthy"],
+      "createdAt": "2024-12-05T10:00:00Z",
+      "updatedAt": "2025-01-04T10:00:00Z"
+    },
+    {
+      "_id": "prod_006",
+      "name": "Fresh Milk (1L)",
+      "description": "Pure cow milk fresh from dairy farms",
+      "price": 65,
+      "category": "dairy",
+      "categoryName": "Dairy & Eggs",
+      "stock": 100,
+      "vendor": {
+        "_id": "vendor_004",
+        "businessName": "Daily Dairy",
+        "slug": "daily-dairy",
+        "businessType": "dairy_shop",
+        "logo": "🐄",
+        "rating": 4.9,
+        "reviewCount": 178
+      },
+      "image": "https://images.unsplash.com/photo-1563636619-e0cde5ecacbc?w=500",
+      "rating": 4.8,
+      "reviewCount": 134,
+      "tags": ["dairy", "fresh", "protein"],
+      "createdAt": "2024-12-06T10:00:00Z",
+      "updatedAt": "2025-01-04T10:00:00Z"
+    },
+    {
+      "_id": "prod_007",
+      "name": "Whole Wheat Bread",
+      "description": "Freshly baked whole wheat bread",
+      "price": 50,
+      "category": "bakery",
+      "categoryName": "Bakery & Grains",
+      "stock": 80,
+      "vendor": {
+        "_id": "vendor_005",
+        "businessName": "Golden Bakery",
+        "slug": "golden-bakery",
+        "businessType": "bakery_shop",
+        "logo": "🥐",
+        "rating": 4.7,
+        "reviewCount": 145
+      },
+      "image": "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=500",
+      "rating": 4.6,
+      "reviewCount": 92,
+      "tags": ["bread", "bakery", "healthy"],
+      "createdAt": "2024-12-07T10:00:00Z",
+      "updatedAt": "2025-01-04T10:00:00Z"
+    },
+    {
+      "_id": "prod_008",
+      "name": "Basmati Rice (5kg)",
+      "description": "Premium long grain basmati rice",
+      "price": 350,
+      "category": "bakery",
+      "categoryName": "Bakery & Grains",
+      "stock": 50,
+      "vendor": {
+        "_id": "vendor_003",
+        "businessName": "Village Greens",
+        "slug": "village-greens",
+        "businessType": "general_store",
+        "logo": "🥗",
+        "rating": 4.7,
+        "reviewCount": 312
+      },
+      "image": "https://images.unsplash.com/photo-1586866317375-3f9f71ad6270?w=500",
+      "rating": 4.8,
+      "reviewCount": 156,
+      "tags": ["grains", "basmati", "premium"],
+      "createdAt": "2024-12-08T10:00:00Z",
+      "updatedAt": "2025-01-04T10:00:00Z"
+    },
+    {
+      "_id": "prod_009",
+      "name": "Chicken Breast (1kg)",
+      "description": "Fresh boneless chicken breast",
+      "price": 280,
+      "category": "meat",
+      "categoryName": "Meat & Fish",
+      "stock": 60,
+      "vendor": {
+        "_id": "vendor_006",
+        "businessName": "Fresh Meat House",
+        "slug": "fresh-meat-house",
+        "businessType": "meat_shop",
+        "logo": "🍗",
+        "rating": 4.8,
+        "reviewCount": 167
+      },
+      "image": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500",
+      "rating": 4.7,
+      "reviewCount": 89,
+      "tags": ["meat", "fresh", "protein"],
+      "createdAt": "2024-12-09T10:00:00Z",
+      "updatedAt": "2025-01-04T10:00:00Z"
+    },
+    {
+      "_id": "prod_010",
+      "name": "Red Chilli Powder (500g)",
+      "description": "Pure ground red chilli powder",
+      "price": 120,
+      "category": "spices",
+      "categoryName": "Spices & Condiments",
+      "stock": 200,
+      "vendor": {
+        "_id": "vendor_002",
+        "businessName": "Organic Valley",
+        "slug": "organic-valley",
+        "businessType": "organic_farm",
+        "logo": "🥕",
+        "rating": 4.6,
+        "reviewCount": 189
+      },
+      "image": "https://images.unsplash.com/photo-1599599810694-f3a5150db220?w=500",
+      "rating": 4.7,
+      "reviewCount": 145,
+      "tags": ["spices", "chilli", "powder"],
+      "createdAt": "2024-12-10T10:00:00Z",
+      "updatedAt": "2025-01-04T10:00:00Z"
+    },
+    {
+      "_id": "prod_011",
+      "name": "Green Tea (100 bags)",
+      "description": "Premium organic green tea",
+      "price": 180,
+      "category": "snacks",
+      "categoryName": "Snacks & Beverages",
+      "stock": 120,
+      "vendor": {
+        "_id": "vendor_002",
+        "businessName": "Organic Valley",
+        "slug": "organic-valley",
+        "businessType": "organic_farm",
+        "logo": "🥕",
+        "rating": 4.6,
+        "reviewCount": 189
+      },
+      "image": "https://images.unsplash.com/photo-1597318972346-4840132b8c84?w=500",
+      "rating": 4.8,
+      "reviewCount": 167,
+      "tags": ["tea", "organic", "healthy"],
+      "createdAt": "2024-12-11T10:00:00Z",
+      "updatedAt": "2025-01-04T10:00:00Z"
+    },
+    {
+      "_id": "prod_012",
+      "name": "Almond Butter (500g)",
+      "description": "Pure organic almond butter no added sugar",
+      "price": 450,
+      "category": "organic",
+      "categoryName": "Organic & Health",
+      "stock": 45,
+      "vendor": {
+        "_id": "vendor_001",
+        "businessName": "Fresh Farms Co.",
+        "slug": "fresh-farms-co",
+        "businessType": "organic_farm",
+        "logo": "🌾",
+        "rating": 4.8,
+        "reviewCount": 245
+      },
+      "image": "https://images.unsplash.com/photo-1599599810694-f3a5150db220?w=500",
+      "rating": 4.9,
+      "reviewCount": 178,
+      "tags": ["organic", "nuts", "healthy"],
+      "createdAt": "2024-12-12T10:00:00Z",
+      "updatedAt": "2025-01-04T10:00:00Z"
+    }
+  ]
+}

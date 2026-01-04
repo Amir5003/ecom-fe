@@ -1,0 +1,174 @@
+{
+  "vendorDashboard": {
+    "stats": {
+      "totalProducts": 45,
+      "totalOrders": 128,
+      "totalEarnings": 145000,
+      "pendingOrders": 12
+    },
+    "recentOrders": [
+      {
+        "_id": "order_101",
+        "customer": {
+          "name": "John Doe"
+        },
+        "totalAmount": 450,
+        "vendorEarnings": 405,
+        "status": "pending",
+        "itemCount": 3,
+        "createdAt": "2025-01-04T08:00:00Z"
+      },
+      {
+        "_id": "order_102",
+        "customer": {
+          "name": "Jane Smith"
+        },
+        "totalAmount": 320,
+        "vendorEarnings": 288,
+        "status": "shipped",
+        "itemCount": 2,
+        "createdAt": "2025-01-03T15:00:00Z"
+      }
+    ]
+  },
+  "vendorProducts": [
+    {
+      "_id": "prod_001",
+      "name": "Fresh Tomatoes",
+      "price": 45,
+      "category": "vegetables",
+      "stock": 150,
+      "image": "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=500",
+      "createdAt": "2024-12-01T10:00:00Z"
+    },
+    {
+      "_id": "prod_004",
+      "name": "Bell Peppers Mix",
+      "price": 90,
+      "category": "vegetables",
+      "stock": 120,
+      "image": "https://images.unsplash.com/photo-1599599810290-c97b34a7a2d1?w=500",
+      "createdAt": "2024-12-04T10:00:00Z"
+    },
+    {
+      "_id": "prod_007",
+      "name": "Cucumber",
+      "price": 30,
+      "category": "vegetables",
+      "stock": 250,
+      "image": "https://images.unsplash.com/photo-1599599810918-8a5e0f2a0c8c?w=500",
+      "createdAt": "2024-12-07T10:00:00Z"
+    }
+  ],
+  "vendorOrders": [
+    {
+      "_id": "order_v001",
+      "orderNumber": "ORD001",
+      "customer": {
+        "name": "Rahul Kumar",
+        "email": "rahul@example.com"
+      },
+      "totalAmount": 180,
+      "vendorAmount": 162,
+      "status": "pending",
+      "itemCount": 3,
+      "items": [
+        {
+          "product": {
+            "name": "Fresh Tomatoes"
+          },
+          "quantity": 2,
+          "price": 45
+        },
+        {
+          "product": {
+            "name": "Bell Peppers Mix"
+          },
+          "quantity": 1,
+          "price": 90
+        }
+      ],
+      "createdAt": "2025-01-03T10:00:00Z"
+    },
+    {
+      "_id": "order_v002",
+      "orderNumber": "ORD002",
+      "customer": {
+        "name": "Priya Sharma",
+        "email": "priya@example.com"
+      },
+      "totalAmount": 120,
+      "vendorAmount": 108,
+      "status": "shipped",
+      "itemCount": 2,
+      "items": [
+        {
+          "product": {
+            "name": "Cucumber"
+          },
+          "quantity": 4,
+          "price": 30
+        }
+      ],
+      "createdAt": "2025-01-02T10:00:00Z"
+    }
+  ],
+  "vendorEarnings": {
+    "stats": {
+      "totalEarnings": 145000,
+      "currentBalance": 32500,
+      "totalPaidOut": 112500,
+      "pendingRequests": 2
+    },
+    "transactions": [
+      {
+        "_id": "txn_001",
+        "date": "2025-01-03",
+        "type": "credit",
+        "description": "Order #ORD001 payment received",
+        "amount": 162,
+        "status": "completed"
+      },
+      {
+        "_id": "txn_002",
+        "date": "2025-01-02",
+        "type": "credit",
+        "description": "Order #ORD002 payment received",
+        "amount": 108,
+        "status": "completed"
+      },
+      {
+        "_id": "txn_003",
+        "date": "2025-01-01",
+        "type": "debit",
+        "description": "Commission on Order #ORD003",
+        "amount": 18,
+        "status": "completed"
+      },
+      {
+        "_id": "txn_004",
+        "date": "2024-12-31",
+        "type": "debit",
+        "description": "Payout processed",
+        "amount": 5000,
+        "status": "completed"
+      }
+    ],
+    "payoutRequests": [
+      {
+        "_id": "payout_001",
+        "date": "2025-01-01",
+        "amount": 10000,
+        "status": "pending",
+        "accountLast4": "1234"
+      },
+      {
+        "_id": "payout_002",
+        "date": "2024-12-28",
+        "amount": 7500,
+        "status": "approved",
+        "accountLast4": "1234"
+      }
+    ]
+  }
+}

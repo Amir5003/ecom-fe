@@ -1,0 +1,206 @@
+{
+  "stores": [
+    {
+      "_id": "vendor_001",
+      "businessName": "Fresh Farms Co.",
+      "businessDescription": "Premium organic vegetables and fruits from local farms",
+      "businessType": "organic_farm",
+      "slug": "fresh-farms-co",
+      "logo": "🌾",
+      "rating": 4.8,
+      "reviewCount": 245,
+      "status": "active",
+      "address": "Farm House, Nashik",
+      "city": "Nashik",
+      "phone": "9876543220",
+      "categories": ["vegetables", "fruits", "organic"],
+      "owner": {
+        "_id": "vendor_001",
+        "name": "Rajesh Verma",
+        "email": "rajesh@vendor.com"
+      }
+    },
+    {
+      "_id": "vendor_002",
+      "businessName": "Organic Valley",
+      "businessDescription": "100% organic certified vegetables and organic products",
+      "businessType": "organic_farm",
+      "slug": "organic-valley",
+      "logo": "🥕",
+      "rating": 4.6,
+      "reviewCount": 189,
+      "status": "active",
+      "address": "Agricultural Area, Pune",
+      "city": "Pune",
+      "phone": "9876543221",
+      "categories": ["vegetables", "spices", "organic", "snacks"],
+      "owner": {
+        "_id": "vendor_002",
+        "name": "Deepak Sharma",
+        "email": "deepak@vendor.com"
+      }
+    },
+    {
+      "_id": "vendor_003",
+      "businessName": "Village Greens",
+      "businessDescription": "Farm fresh vegetables and multi-category general store",
+      "businessType": "general_store",
+      "slug": "village-greens",
+      "logo": "🥗",
+      "rating": 4.7,
+      "reviewCount": 312,
+      "status": "active",
+      "address": "Green Village Market, Haryana",
+      "city": "Haryana",
+      "phone": "9876543222",
+      "categories": ["vegetables", "fruits", "bakery", "spices"],
+      "owner": {
+        "_id": "vendor_003",
+        "name": "Neha Singh",
+        "email": "neha@vendor.com"
+      }
+    },
+    {
+      "_id": "vendor_004",
+      "businessName": "Daily Dairy",
+      "businessDescription": "Fresh milk, cheese, yogurt and dairy products delivered daily",
+      "businessType": "dairy_shop",
+      "slug": "daily-dairy",
+      "logo": "🐄",
+      "rating": 4.9,
+      "reviewCount": 178,
+      "status": "active",
+      "address": "Dairy Complex, Bangalore",
+      "city": "Bangalore",
+      "phone": "9876543223",
+      "categories": ["dairy"],
+      "owner": {
+        "_id": "vendor_004",
+        "name": "Priya Gupta",
+        "email": "priya@dairy.com"
+      }
+    },
+    {
+      "_id": "vendor_005",
+      "businessName": "Golden Bakery",
+      "businessDescription": "Fresh baked bread, cakes, pastries and bakery items",
+      "businessType": "bakery_shop",
+      "slug": "golden-bakery",
+      "logo": "🥐",
+      "rating": 4.7,
+      "reviewCount": 145,
+      "status": "active",
+      "address": "Baker's Lane, Chennai",
+      "city": "Chennai",
+      "phone": "9876543224",
+      "categories": ["bakery"],
+      "owner": {
+        "_id": "vendor_005",
+        "name": "Sanjay Bhat",
+        "email": "sanjay@bakery.com"
+      }
+    },
+    {
+      "_id": "vendor_006",
+      "businessName": "Fresh Meat House",
+      "businessDescription": "Fresh and hygenic chicken, fish, mutton and meat products",
+      "businessType": "meat_shop",
+      "slug": "fresh-meat-house",
+      "logo": "🍗",
+      "rating": 4.8,
+      "reviewCount": 167,
+      "status": "active",
+      "address": "Market Street, Kochi",
+      "city": "Kochi",
+      "phone": "9876543225",
+      "categories": ["meat"],
+      "owner": {
+        "_id": "vendor_006",
+        "name": "Arjun Menon",
+        "email": "arjun@meat.com"
+      }
+    }
+  ],
+  "storeProducts": [
+    {
+      "_id": "prod_001",
+      "name": "Fresh Tomatoes",
+      "description": "Juicy red tomatoes picked fresh from our farms",
+      "price": 45,
+      "category": "vegetables",
+      "stock": 150,
+      "image": "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=500",
+      "rating": 4.7,
+      "reviewCount": 89,
+      "vendor": {
+        "_id": "vendor_001",
+        "businessName": "Fresh Farms Co.",
+        "slug": "fresh-farms-co"
+      }
+    },
+    {
+      "_id": "prod_004",
+      "name": "Bell Peppers Mix",
+      "description": "Mixed color bell peppers - red, yellow, and green",
+      "price": 90,
+      "category": "vegetables",
+      "stock": 120,
+      "image": "https://images.unsplash.com/photo-1599599810290-c97b34a7a2d1?w=500",
+      "rating": 4.9,
+      "reviewCount": 156,
+      "vendor": {
+        "_id": "vendor_001",
+        "businessName": "Fresh Farms Co.",
+        "slug": "fresh-farms-co"
+      }
+    },
+    {
+      "_id": "prod_007",
+      "name": "Cucumber",
+      "description": "Cool and crisp cucumbers, perfect for salads and snacks",
+      "price": 30,
+      "category": "vegetables",
+      "stock": 250,
+      "image": "https://images.unsplash.com/photo-1599599810918-8a5e0f2a0c8c?w=500",
+      "rating": 4.6,
+      "reviewCount": 92,
+      "vendor": {
+        "_id": "vendor_001",
+        "businessName": "Fresh Farms Co.",
+        "slug": "fresh-farms-co"
+      }
+    }
+  ],
+  "storeReviews": [
+    {
+      "_id": "review_001",
+      "customer": {
+        "_id": "cust_001",
+        "name": "Rahul Kumar"
+      },
+      "rating": 5,
+      "comment": "Excellent quality vegetables! Very fresh and delivered on time.",
+      "createdAt": "2025-01-01T10:00:00Z"
+    },
+    {
+      "_id": "review_002",
+      "customer": {
+        "_id": "cust_002",
+        "name": "Priya Sharma"
+      },
+      "rating": 4,
+      "comment": "Good quality but packaging could be better.",
+      "createdAt": "2024-12-28T10:00:00Z"
+    },
+    {
+      "_id": "review_003",
+      "customer": {
+        "_id": "cust_003",
+        "name": "Amit Patel"
+      },
+      "rating": 5,
+      "comment": "Best organic vegetables in the city!",
+      "createdAt": "2024-12-25T10:00:00Z"
+    }
+  ]
+}
