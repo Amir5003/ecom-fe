@@ -8,7 +8,7 @@ import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import Loading from '@/components/Loading';
 import { cartService } from '@/services/api';
-import { UPLOAD_BASE_URL } from '@/config/endpoints';
+import { buildImageUrl } from '@/utils/imageCompression';
 import useAuthStore from '@/store/authStore';
 import useCartStore from '@/store/cartStore';
 import Link from 'next/link';
@@ -126,8 +126,8 @@ const Cart = () => {
                           <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                             <Box
                               component="img"
-                              src={`${UPLOAD_BASE_URL}/${item.product.image}`}
-                              sx={{ width: 50, height: 50, borderRadius: '8px' }}
+                              src={buildImageUrl(item.product.image)}
+                              sx={{ width: 50, height: 50, borderRadius: '8px', objectFit: 'cover' }}
                             />
                             {item.product.name}
                           </Box>

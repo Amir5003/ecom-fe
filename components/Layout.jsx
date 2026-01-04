@@ -27,7 +27,7 @@ const Layout = ({ children }) => {
       }}
     >
       <Navbar />
-      <Box component="main" sx={{ flex: 1, py: 4 }}>
+      <Box component="main" sx={{ flex: 1, py: { xs: 2, sm: 4 }, px: { xs: 0, sm: 0 } }}>
         {children}
       </Box>
       <Footer />

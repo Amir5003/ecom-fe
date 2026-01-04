@@ -38,14 +38,28 @@ const Login = () => {
         email: userData.email,
         role: userData.role,
         vendorSlug: userData.vendorSlug,
+        vendorStatus: userData.vendorStatus, // Add vendor status to user object
       };
       
       setUser(user, userData.token);
       toast.success(data.ackMessage || 'Login successful!');
 
-      // Redirect based on role
+      // Redirect based on role and vendor status
       if (userData.role === 'vendor') {
-        router.push('/vendor/dashboard');
+        // Handle vendor-specific flows
+        if (userData.vendorStatus === 'SETUP_REQUIRED') {
+          // Vendor needs to complete setup
+          router.push('/vendor/setup');
+        } else if (userData.vendorStatus === 'PENDING_APPROVAL') {
+          // Vendor is waiting for admin approval
+          router.push('/vendor/pending-approval');
+        } else if (userData.vendorStatus === 'APPROVED') {
+          // Vendor is fully approved
+          router.push('/vendor/dashboard');
+        } else {
+          // Vendor status is unknown/undefined - treat as setup required
+          router.push('/vendor/setup');
+        }
       } else if (userData.role === 'admin') {
         router.push('/admin/dashboard');
       } else {

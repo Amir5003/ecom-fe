@@ -88,6 +88,7 @@ export const authService = {
   verifyEmail: (email, verificationCode) => api.post(API_ENDPOINTS.AUTH.VERIFY_EMAIL, { email, verificationCode }),
   resendVerificationCode: (email) => api.post(`${API_ENDPOINTS.AUTH.VERIFY_EMAIL}/resend`, { email }),
   vendorSetup: (data) => api.post(API_ENDPOINTS.AUTH.VENDOR_SETUP, data),
+  getVendorStatus: () => api.get('/auth/vendor-status'),
 };
 
 /**

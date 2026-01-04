@@ -2,15 +2,15 @@
  * Vendor Products Management Page
  */
 
-import { Box, Container, Typography, Grid, Paper, Button, Table, TableBody, TableCell, TableHead, TableRow, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
+import { Box, Container, Typography, Grid, Paper, Button, Table, TableBody, TableCell, TableHead, TableRow, Dialog, DialogTitle, DialogContent, DialogActions, TextField, CircularProgress } from '@mui/material';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import Loading from '@/components/Loading';
 import { productService } from '@/services/api';
-import { UPLOAD_BASE_URL } from '@/config/endpoints';
 import useAuthStore from '@/store/authStore';
 import toast from 'react-hot-toast';
+import { compressImage, buildImageUrl } from '@/utils/imageCompression';
 
 const VendorProducts = () => {
   const router = useRouter();
@@ -19,12 +19,14 @@ const VendorProducts = () => {
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [compressing, setCompressing] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     price: '',
     category: '',
-    stock: '',
+    quantity: '',
+    image: null,
   });
 
   useEffect(() => {
@@ -56,11 +58,12 @@ const VendorProducts = () => {
         description: product.description,
         price: product.price,
         category: product.category,
-        stock: product.stock,
+        quantity: product.quantity,
+        image: null,
       });
     } else {
       setEditingProduct(null);
-      setFormData({ name: '', description: '', price: '', category: '', stock: '' });
+      setFormData({ name: '', description: '', price: '', category: '', quantity: '', image: null });
     }
     setOpenDialog(true);
   };
@@ -70,13 +73,42 @@ const VendorProducts = () => {
     setEditingProduct(null);
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const handleChange = async (e) => {
+    const { name, value, type, files } = e.target;
+    if (type === 'file') {
+      const file = files[0];
+      if (file) {
+        setCompressing(true);
+        try {
+          const compressedFile = await compressImage(file, 50); // 50KB max size
+          setFormData((prev) => ({ ...prev, [name]: compressedFile }));
+          toast.success(`Image compressed successfully (${(compressedFile.size / 1024).toFixed(2)}KB)`);
+        } catch (error) {
+          toast.error(error.message || 'Failed to compress image');
+          setFormData((prev) => ({ ...prev, [name]: null }));
+        } finally {
+          setCompressing(false);
+        }
+      }
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSaveProduct = async () => {
     try {
+      // Validate required fields
+      if (!formData.name || !formData.description || !formData.price || !formData.category || !formData.quantity) {
+        toast.error('Please fill in all fields');
+        return;
+      }
+
+      // For new products, image is required
+      if (!editingProduct && !formData.image) {
+        toast.error('Product image is required');
+        return;
+      }
+
       if (editingProduct) {
         await productService.updateProduct(editingProduct._id, formData);
         toast.success('Product updated successfully');
@@ -87,7 +119,7 @@ const VendorProducts = () => {
       fetchProducts();
       handleCloseDialog();
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to save product');
+      toast.error(error.response?.data?.ackMessage || 'Failed to save product');
     }
   };
 
@@ -146,14 +178,18 @@ const VendorProducts = () => {
                     <TableCell>
                       <Box
                         component="img"
-                        src={`${UPLOAD_BASE_URL}/${product.image}`}
-                        sx={{ width: 50, height: 50, borderRadius: '8px' }}
+                        src={buildImageUrl(product.image)}
+                        alt={product.name}
+                        sx={{ width: 50, height: 50, borderRadius: '8px', objectFit: 'cover' }}
+                        onError={(e) => {
+                          e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="50" height="50"%3E%3Crect width="50" height="50" fill="%23ccc"/%3E%3Ctext x="50%" y="50%" text-anchor="middle" dy=".3em" fill="%23999" font-size="12"%3ENo Image%3C/text%3E%3C/svg%3E';
+                        }}
                       />
                     </TableCell>
                     <TableCell>{product.name}</TableCell>
                     <TableCell>{product.category}</TableCell>
                     <TableCell align="right">₹{product.price}</TableCell>
-                    <TableCell align="right">{product.stock} units</TableCell>
+                    <TableCell align="right">{product.quantity} units</TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', gap: 1 }}>
                         <Button
@@ -229,14 +265,41 @@ const VendorProducts = () => {
               <option value="herbs">Herbs</option>
             </TextField>
             <TextField
-              label="Stock"
-              name="stock"
+              label="Quantity"
+              name="quantity"
               type="number"
-              value={formData.stock}
+              value={formData.quantity}
               onChange={handleChange}
               fullWidth
               variant="outlined"
             />
+            {!editingProduct && (
+              <Box>
+                <TextField
+                  label="Product Image"
+                  name="image"
+                  type="file"
+                  inputProps={{ accept: 'image/*', disabled: compressing }}
+                  onChange={handleChange}
+                  fullWidth
+                  variant="outlined"
+                  InputLabelProps={{ shrink: true }}
+                />
+                {compressing && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+                    <CircularProgress size={20} sx={{ color: '#4CAF50' }} />
+                    <Typography variant="body2" sx={{ color: '#4CAF50' }}>
+                      Compressing image...
+                    </Typography>
+                  </Box>
+                )}
+                {formData.image && (
+                  <Typography variant="body2" sx={{ color: '#4CAF50', mt: 1 }}>
+                    ✓ Image selected: {(formData.image.size / 1024).toFixed(2)}KB
+                  </Typography>
+                )}
+              </Box>
+            )}
           </DialogContent>
           <DialogActions sx={{ p: 2 }}>
             <Button onClick={handleCloseDialog}>Cancel</Button>
@@ -244,8 +307,9 @@ const VendorProducts = () => {
               variant="contained"
               sx={{ backgroundColor: '#4CAF50' }}
               onClick={handleSaveProduct}
+              disabled={compressing}
             >
-              Save
+              {compressing ? 'Compressing...' : 'Save'}
             </Button>
           </DialogActions>
         </Dialog>
