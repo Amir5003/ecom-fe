@@ -2,13 +2,13 @@
  * Stores Page
  */
 
-import { Box, Container, Typography, Grid, TextField, MenuItem } from '@mui/material';
+import { Box, Container, Typography, Grid, TextField, MenuItem, Alert } from '@mui/material';
 import { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import Card from '@/components/Card';
 import Loading from '@/components/Loading';
-import { productService, vendorService } from '@/services/api';
-import { UPLOAD_BASE_URL } from '@/config/endpoints';
+import { storeService } from '@/services/api';
+import { buildImageUrl } from '@/utils/imageCompression';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 
@@ -32,20 +32,9 @@ const Stores = () => {
   const fetchVendors = async () => {
     try {
       setLoading(true);
-      // This would be fetched from a get all vendors endpoint
-      // For now, using a placeholder
-      const { data } = await productService.getAllProducts({ limit: 100 });
-      const uniqueVendors = {};
-      
-      if (data.products) {
-        data.products.forEach((product) => {
-          if (product.vendor && !uniqueVendors[product.vendor._id]) {
-            uniqueVendors[product.vendor._id] = product.vendor;
-          }
-        });
-      }
-      
-      setVendors(Object.values(uniqueVendors));
+      const { data } = await storeService.getAllStores({ limit: 100, search: searchQuery });
+      const stores = data?.stores || [];
+      setVendors(stores);
     } catch (error) {
       toast.error('Failed to load stores');
       console.error(error);
@@ -94,7 +83,7 @@ const Stores = () => {
               <Grid item xs={12} sm={6} md={4} key={vendor._id}>
                 <Link href={`/store/${vendor.storeSlug}`} style={{ textDecoration: 'none' }}>
                   <Card
-                    image={vendor.logo || `${UPLOAD_BASE_URL}/default-store.png`}
+                    image={buildImageUrl(vendor.logo) || buildImageUrl('default-store.png')}
                     title={vendor.businessName}
                     description={vendor.businessDescription}
                   >

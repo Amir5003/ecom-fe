@@ -38,6 +38,8 @@ export const API_ENDPOINTS = {
 
   // Store endpoints
   STORE: {
+    GET_ALL: `${API_BASE_URL}/store`,
+    VALIDATE_NAME: `${API_BASE_URL}/store/validate-name`,
     GET_BY_SLUG: (slug) => `${API_BASE_URL}/store/${slug}`,
     GET_PRODUCTS: (slug) => `${API_BASE_URL}/store/${slug}/products`,
     GET_REVIEWS: (slug) => `${API_BASE_URL}/store/${slug}/reviews`,

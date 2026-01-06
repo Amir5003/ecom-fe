@@ -3,7 +3,7 @@
  * Vendors complete their business profile information here before they can access the dashboard
  */
 
-import { useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
   Box,
   Container,
@@ -20,7 +20,7 @@ import {
 } from '@mui/material';
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
-import { authService } from '@/services/api';
+import { authService, storeService } from '@/services/api';
 import toast from 'react-hot-toast';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import InfoIcon from '@mui/icons-material/Info';
@@ -30,6 +30,10 @@ const VendorSetup = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [nameCheck, setNameCheck] = useState({ status: 'idle', message: '', slug: '' });
+  const [logoFile, setLogoFile] = useState(null);
+  const [logoPreview, setLogoPreview] = useState('');
+  const logoInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
     businessName: '',
@@ -107,6 +111,58 @@ const VendorSetup = () => {
     return true;
   };
 
+  const handleLogoSelect = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please upload a valid image file');
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      setError('Logo must be smaller than 2MB');
+      return;
+    }
+
+    setError('');
+    setLogoFile(file);
+    setLogoPreview(URL.createObjectURL(file));
+  };
+
+  // Debounced store name availability check
+  useEffect(() => {
+    const trimmedName = formData.businessName.trim();
+    if (!trimmedName) {
+      setNameCheck({ status: 'idle', message: '', slug: '' });
+      return undefined;
+    }
+
+    const timer = setTimeout(async () => {
+      setNameCheck({ status: 'checking', message: '', slug: '' });
+      try {
+        const { data } = await storeService.validateName(trimmedName);
+        if (data.available) {
+          setNameCheck({ status: 'available', message: data.message || 'Store name is available', slug: data.storeSlug });
+        } else {
+          setNameCheck({ status: 'taken', message: data.message || 'Store name is already taken', slug: data.storeSlug });
+        }
+      } catch (err) {
+        const msg = err.response?.data?.message || 'Could not validate store name';
+        setNameCheck({ status: 'error', message: msg, slug: '' });
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [formData.businessName]);
+
+  // Cleanup object URL when logo changes
+  useEffect(() => () => {
+    if (logoPreview) {
+      URL.revokeObjectURL(logoPreview);
+    }
+  }, [logoPreview]);
+
   const handleNext = () => {
     if (validateStep(activeStep)) {
       setActiveStep((prev) => prev + 1);
@@ -122,10 +178,30 @@ const VendorSetup = () => {
       return;
     }
 
+    if (nameCheck.status === 'taken') {
+      setError('Store name is already taken. Please choose another name.');
+      return;
+    }
+
+    if (nameCheck.status === 'checking') {
+      setError('Please wait while we check store name availability.');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const { data } = await authService.vendorSetup(formData);
+      const payload = new FormData();
+      payload.append('businessName', formData.businessName.trim());
+      payload.append('businessDescription', formData.businessDescription);
+      payload.append('businessLicense', formData.businessLicense.trim());
+      payload.append('phoneNumber', formData.phoneNumber.trim());
+      payload.append('address', JSON.stringify(formData.address));
+      if (logoFile) {
+        payload.append('logo', logoFile);
+      }
+
+      const { data } = await authService.vendorSetup(payload);
       toast.success(data.ackMessage || 'Vendor setup completed! Waiting for admin approval...');
       
       // Redirect to pending approval page
@@ -203,6 +279,71 @@ const VendorSetup = () => {
                 </Typography>
                 <Grid container spacing={3}>
                   <Grid item xs={12}>
+                    <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>
+                      Store Logo
+                    </Typography>
+                    <Box
+                      onClick={() => logoInputRef.current?.click()}
+                      sx={{
+                        border: '1px dashed #bdbdbd',
+                        borderRadius: '10px',
+                        p: 2,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 2,
+                        cursor: 'pointer',
+                        backgroundColor: '#fafafa',
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          width: 80,
+                          height: 80,
+                          borderRadius: '8px',
+                          overflow: 'hidden',
+                          backgroundColor: '#fff',
+                          border: '1px solid #e0e0e0',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        {logoPreview ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={logoPreview}
+                            alt="Logo preview"
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          />
+                        ) : (
+                          <Typography variant="caption" color="textSecondary" align="center">
+                            Click to upload
+                          </Typography>
+                        )}
+                      </Box>
+                      <Box>
+                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                          Upload store logo
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary">
+                          Recommended: square image, under 2MB. PNG/JPG.
+                        </Typography>
+                        {logoFile && (
+                          <Typography variant="caption" color="textSecondary">
+                            Selected: {logoFile.name}
+                          </Typography>
+                        )}
+                      </Box>
+                    </Box>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      ref={logoInputRef}
+                      style={{ display: 'none' }}
+                      onChange={handleLogoSelect}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
                     <TextField
                       fullWidth
                       label="Business Name"
@@ -212,7 +353,18 @@ const VendorSetup = () => {
                       placeholder="Enter your business name"
                       variant="outlined"
                       required
+                      error={nameCheck.status === 'taken' || nameCheck.status === 'error'}
+                      helperText={
+                        nameCheck.status === 'checking'
+                          ? 'Checking availability...'
+                          : nameCheck.message
+                      }
                     />
+                    {nameCheck.status === 'available' && nameCheck.slug && (
+                      <Typography variant="caption" color="success.main">
+                        Your store URL will be /store/{nameCheck.slug}
+                      </Typography>
+                    )}
                   </Grid>
                   <Grid item xs={12}>
                     <TextField

@@ -87,7 +87,10 @@ export const authService = {
   logout: () => api.post(API_ENDPOINTS.AUTH.LOGOUT),
   verifyEmail: (email, verificationCode) => api.post(API_ENDPOINTS.AUTH.VERIFY_EMAIL, { email, verificationCode }),
   resendVerificationCode: (email) => api.post(`${API_ENDPOINTS.AUTH.VERIFY_EMAIL}/resend`, { email }),
-  vendorSetup: (data) => api.post(API_ENDPOINTS.AUTH.VENDOR_SETUP, data),
+  vendorSetup: (data) =>
+    api.post(API_ENDPOINTS.AUTH.VENDOR_SETUP, data, {
+      headers: data instanceof FormData ? { 'Content-Type': 'multipart/form-data' } : undefined,
+    }),
   getVendorStatus: () => api.get('/auth/vendor-status'),
 };
 
@@ -121,6 +124,8 @@ export const productService = {
  * STORE SERVICE
  */
 export const storeService = {
+  getAllStores: (params) => api.get(API_ENDPOINTS.STORE.GET_ALL, { params }),
+  validateName: (name) => api.get(API_ENDPOINTS.STORE.VALIDATE_NAME, { params: { name } }),
   getStoreBySlug: (slug) => api.get(API_ENDPOINTS.STORE.GET_BY_SLUG(slug)),
   getStoreProducts: (slug, params) =>
     api.get(API_ENDPOINTS.STORE.GET_PRODUCTS(slug), { params }),

@@ -9,7 +9,7 @@ import Layout from '@/components/Layout';
 import Card from '@/components/Card';
 import Loading from '@/components/Loading';
 import { storeService } from '@/services/api';
-import { UPLOAD_BASE_URL } from '@/config/endpoints';
+import { buildImageUrl } from '@/utils/imageCompression';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import useCartStore from '@/store/cartStore';
@@ -32,10 +32,10 @@ const StoreDetail = () => {
     try {
       setLoading(true);
       const storeRes = await storeService.getStoreBySlug(slug);
-      const productsRes = await storeService.getStoreProducts(slug);
+      const productsRes = await storeService.getStoreProducts(slug, { limit: 100 });
 
-      setStore(storeRes.data.store);
-      setProducts(productsRes.data.products || []);
+      setStore(storeRes.data?.data || storeRes.data?.store || storeRes.data);
+      setProducts(productsRes.data?.products || productsRes.data?.data?.products || []);
     } catch (error) {
       toast.error('Failed to load store');
       console.error(error);
@@ -71,8 +71,8 @@ const StoreDetail = () => {
           {store.logo && (
             <Box
               component="img"
-              src={store.logo}
-              sx={{ width: 120, height: 120, borderRadius: '12px' }}
+              src={buildImageUrl(store.logo)}
+              sx={{ width: 120, height: 120, borderRadius: '12px', objectFit: 'cover' }}
             />
           )}
           <Box sx={{ flex: 1 }}>
@@ -109,7 +109,7 @@ const StoreDetail = () => {
               products.map((product) => (
                 <Grid item xs={12} sm={6} md={3} key={product._id}>
                   <Card
-                    image={`${UPLOAD_BASE_URL}/${product.image}`}
+                    image={buildImageUrl(product.image)}
                     title={product.name}
                     description={product.description}
                     price={product.price}

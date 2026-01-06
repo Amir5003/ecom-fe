@@ -90,11 +90,13 @@ const Navbar = () => {
             Home
           </MenuItem>
         </Link>
-        <Link href="/stores" style={{ textDecoration: 'none' }}>
-          <MenuItem onClick={handleDrawerClose} sx={{ color: '#333' }}>
-            Stores
-          </MenuItem>
-        </Link>
+        {isAuthenticated && (
+          <Link href="/stores" style={{ textDecoration: 'none' }}>
+            <MenuItem onClick={handleDrawerClose} sx={{ color: '#333' }}>
+              Stores
+            </MenuItem>
+          </Link>
+        )}
       </Box>
 
       <Divider />
@@ -171,9 +173,11 @@ const Navbar = () => {
           <Link href="/" style={{ textDecoration: 'none' }}>
             <Button sx={{ color: '#333', fontSize: '1rem' }}>Home</Button>
           </Link>
-          <Link href="/stores" style={{ textDecoration: 'none' }}>
-            <Button sx={{ color: '#333', fontSize: '1rem' }}>Stores</Button>
-          </Link>
+          {isAuthenticated && (
+            <Link href="/stores" style={{ textDecoration: 'none' }}>
+              <Button sx={{ color: '#333', fontSize: '1rem' }}>Stores</Button>
+            </Link>
+          )}
 
           {isAuthenticated ? (
             <>

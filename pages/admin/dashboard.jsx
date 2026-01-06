@@ -34,6 +34,7 @@ import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import useAuthStore from '@/store/authStore';
 import { adminService } from '@/services/api';
+import { buildImageUrl } from '@/utils/imageCompression';
 import toast from 'react-hot-toast';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import StoreIcon from '@mui/icons-material/Store';
@@ -57,6 +58,7 @@ const AdminDashboard = () => {
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [selectedVendorDetails, setSelectedVendorDetails] = useState(null);
   const [detailsRejectionReason, setDetailsRejectionReason] = useState('');
+  const [detailsLoading, setDetailsLoading] = useState(false);
 
   useEffect(() => {
     if (!user || user.role !== 'admin') {
@@ -114,10 +116,20 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleOpenVendorDetails = (vendor) => {
-    setSelectedVendorDetails(vendor);
+  const handleOpenVendorDetails = async (vendor) => {
     setDetailsDialogOpen(true);
     setDetailsRejectionReason('');
+    setDetailsLoading(true);
+    try {
+      const { data } = await adminService.getVendorDetails(vendor._id);
+      const details = data?.data || data; // handle apiResponse wrapper
+      setSelectedVendorDetails(details);
+    } catch (err) {
+      toast.error(err.response?.data?.ackMessage || 'Failed to load vendor details');
+      setSelectedVendorDetails(vendor);
+    } finally {
+      setDetailsLoading(false);
+    }
   };
 
   const handleApprovePayout = async (payoutId) => {
@@ -495,8 +507,50 @@ const AdminDashboard = () => {
       <Dialog open={detailsDialogOpen} onClose={() => setDetailsDialogOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle sx={{ fontWeight: 700, fontSize: 20 }}>Vendor Details</DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
-          {selectedVendorDetails && (
+          {detailsLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress size={32} />
+            </Box>
+          ) : selectedVendorDetails && (
             <Box>
+              {/* Logo */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                <Box
+                  sx={{
+                    width: 96,
+                    height: 96,
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                    border: '1px solid #e0e0e0',
+                    backgroundColor: '#fafafa',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {selectedVendorDetails.logo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={buildImageUrl(selectedVendorDetails.logo)}
+                      alt="Store logo"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <Typography variant="caption" color="textSecondary" align="center">
+                      No logo uploaded
+                    </Typography>
+                  )}
+                </Box>
+                <Box>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+                    {selectedVendorDetails.businessName}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    Store slug: {selectedVendorDetails.storeSlug || 'N/A'}
+                  </Typography>
+                </Box>
+              </Box>
+
               {/* Vendor Basic Info */}
               <Box sx={{ mb: 3 }}>
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
