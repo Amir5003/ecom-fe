@@ -13,6 +13,7 @@ import { buildImageUrl } from '@/utils/imageCompression';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import useCartStore from '@/store/cartStore';
+import useAuthStore from '@/store/authStore';
 
 const StoreDetail = () => {
   const router = useRouter();
@@ -21,6 +22,7 @@ const StoreDetail = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const { addItem } = useCartStore();
+  const { isAuthenticated } = useAuthStore();
 
   useEffect(() => {
     if (slug) {
@@ -44,9 +46,20 @@ const StoreDetail = () => {
     }
   };
 
-  const handleAddToCart = (product) => {
-    addItem(product, 1);
-    toast.success(`${product.name} added to cart!`);
+  const handleAddToCart = async (product) => {
+    if (!isAuthenticated) {
+      toast.error('Please login to add items');
+      router.push('/auth/login');
+      return;
+    }
+
+    try {
+      await addItem(product._id, 1);
+      toast.success(`${product.name} added to cart!`);
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to add to cart';
+      toast.error(message);
+    }
   };
 
   if (loading) return <Layout><Loading /></Layout>;

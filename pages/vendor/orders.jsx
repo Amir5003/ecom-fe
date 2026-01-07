@@ -13,7 +13,7 @@ import toast from 'react-hot-toast';
 
 const VendorOrders = () => {
   const router = useRouter();
-  const { isAuthenticated, isVendor } = useAuthStore();
+  const { isAuthenticated, isVendor, user } = useAuthStore();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
@@ -32,7 +32,27 @@ const VendorOrders = () => {
     try {
       setLoading(true);
       const { data } = await orderService.getVendorOrders({ page: 1, limit: 50 });
-      setOrders(data.orders || []);
+      const vendorId = user?.vendorProfile || user?.vendor?._id || user?.vendorId;
+
+      const flattened = (data.orders || []).map((order) => {
+        const vendorOrder = order.vendors?.find((v) => {
+          const vId = v.vendor?._id || v.vendor;
+          return vId && vendorId && vId.toString() === vendorId.toString();
+        }) || order.vendors?.[0];
+
+        if (!vendorOrder) return null;
+
+        return {
+          orderId: order._id,
+          customerName: order.customer?.name,
+          vendorStatus: vendorOrder.vendorStatus || 'pending',
+          vendorSubtotal: vendorOrder.vendorSubtotal || 0,
+          itemsCount: vendorOrder.items?.length || 0,
+          createdAt: order.createdAt,
+        };
+      }).filter(Boolean);
+
+      setOrders(flattened);
     } catch (error) {
       toast.error('Failed to load orders');
       console.error(error);
@@ -43,7 +63,7 @@ const VendorOrders = () => {
 
   const handleOpenDialog = (order) => {
     setSelectedOrder(order);
-    setNewStatus(order.vendorStatus || 'PENDING');
+    setNewStatus((order.vendorStatus || 'pending').toLowerCase());
     setOpenDialog(true);
   };
 
@@ -54,7 +74,7 @@ const VendorOrders = () => {
 
   const handleUpdateStatus = async () => {
     try {
-      await orderService.updateVendorOrderStatus(selectedOrder._id, { vendorStatus: newStatus });
+      await orderService.updateVendorOrderStatus(selectedOrder.orderId, { vendorStatus: newStatus });
       toast.success('Order status updated');
       fetchOrders();
       handleCloseDialog();
@@ -65,13 +85,15 @@ const VendorOrders = () => {
 
   const getStatusColor = (status) => {
     const colors = {
-      PENDING: 'warning',
-      ACCEPTED: 'info',
-      SHIPPED: 'primary',
-      DELIVERED: 'success',
-      CANCELLED: 'error',
+      pending: 'warning',
+      processing: 'info',
+      accepted: 'info',
+      shipped: 'primary',
+      in_transit: 'primary',
+      delivered: 'success',
+      cancelled: 'error',
     };
-    return colors[status] || 'default';
+    return colors[status?.toLowerCase()] || 'default';
   };
 
   if (loading) return <Layout><Loading /></Layout>;
@@ -104,11 +126,11 @@ const VendorOrders = () => {
               </TableHead>
               <TableBody>
                 {orders.map((order) => (
-                  <TableRow key={order._id} sx={{ '&:hover': { backgroundColor: '#f9f9f9' } }}>
+                  <TableRow key={order.orderId} sx={{ '&:hover': { backgroundColor: '#f9f9f9' } }}>
                     <TableCell sx={{ fontWeight: 600 }}>
-                      {order._id.substring(0, 8)}...
+                      {order.orderId.substring(0, 8)}...
                     </TableCell>
-                    <TableCell>{order.customer?.name}</TableCell>
+                    <TableCell>{order.customerName || '—'}</TableCell>
                     <TableCell align="right">
                       ₹{order.vendorSubtotal?.toFixed(2) || 0}
                     </TableCell>
@@ -120,7 +142,7 @@ const VendorOrders = () => {
                       />
                     </TableCell>
                     <TableCell>
-                      {order.items?.length || 0} items
+                      {order.itemsCount || 0} items
                     </TableCell>
                     <TableCell>
                       <Button
@@ -152,11 +174,12 @@ const VendorOrders = () => {
               fullWidth
               variant="outlined"
             >
-              <MenuItem value="PENDING">Pending</MenuItem>
-              <MenuItem value="ACCEPTED">Accepted</MenuItem>
-              <MenuItem value="SHIPPED">Shipped</MenuItem>
-              <MenuItem value="DELIVERED">Delivered</MenuItem>
-              <MenuItem value="CANCELLED">Cancelled</MenuItem>
+              <MenuItem value="pending">Pending</MenuItem>
+              <MenuItem value="processing">Processing</MenuItem>
+              <MenuItem value="shipped">Shipped</MenuItem>
+              <MenuItem value="in_transit">In Transit</MenuItem>
+              <MenuItem value="delivered">Delivered</MenuItem>
+              <MenuItem value="cancelled">Cancelled</MenuItem>
             </TextField>
           </DialogContent>
           <Box sx={{ p: 2, display: 'flex', gap: 1, justifyContent: 'flex-end' }}>

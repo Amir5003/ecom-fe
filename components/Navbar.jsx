@@ -8,7 +8,7 @@ import { styled } from '@mui/material/styles';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { ShoppingCart, Logout, Dashboard, Menu as MenuIcon, Close as CloseIcon } from '@mui/icons-material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import useAuthStore from '@/store/authStore';
 import useCartStore from '@/store/cartStore';
 import { authService } from '@/services/api';
@@ -24,7 +24,7 @@ const StyledAppBar = styled(AppBar)(({ theme }) => ({
 const Navbar = () => {
   const router = useRouter();
   const { user, isAuthenticated, clearUser } = useAuthStore();
-  const { totalItems } = useCartStore();
+  const { totalItems, fetchCart } = useCartStore();
   const [anchorEl, setAnchorEl] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -32,6 +32,12 @@ const Navbar = () => {
   const handleMenuClose = () => setAnchorEl(null);
   const handleDrawerOpen = () => setDrawerOpen(true);
   const handleDrawerClose = () => setDrawerOpen(false);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchCart().catch(() => {});
+    }
+  }, [isAuthenticated]);
 
   const handleLogout = async () => {
     try {
@@ -199,6 +205,10 @@ const Navbar = () => {
                   router.push('/profile');
                   handleMenuClose();
                 }}>Profile</MenuItem>
+                <MenuItem onClick={() => {
+                  router.push('/orders');
+                  handleMenuClose();
+                }}>Orders</MenuItem>
                 {user?.role === 'vendor' && (
                   <MenuItem onClick={() => {
                     router.push('/vendor/dashboard');
@@ -206,12 +216,6 @@ const Navbar = () => {
                   }}>
                     Dashboard
                   </MenuItem>
-                )}
-                {user?.role === 'customer' && (
-                  <MenuItem onClick={() => {
-                    router.push('/orders');
-                    handleMenuClose();
-                  }}>My Orders</MenuItem>
                 )}
                 <MenuItem onClick={handleLogout} sx={{ color: '#d32f2f' }}>
                   <Logout sx={{ mr: 1 }} /> Logout

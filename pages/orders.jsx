@@ -26,11 +26,23 @@ const Orders = () => {
     fetchOrders();
   }, [isAuthenticated]);
 
+  const deriveStatus = (order) => {
+    const vendorStatuses = (order.vendors || []).map((v) => (v.vendorStatus || '').toLowerCase());
+    if (vendorStatuses.includes('delivered')) return 'delivered';
+    if (vendorStatuses.includes('in_transit') || vendorStatuses.includes('shipped')) return 'shipped';
+    if (vendorStatuses.includes('processing') || vendorStatuses.includes('accepted')) return 'processing';
+    return (order.orderStatus || 'pending').toLowerCase();
+  };
+
   const fetchOrders = async () => {
     try {
       setLoading(true);
       const { data } = await orderService.getAllOrders({ page: 1, limit: 50 });
-      setOrders(data.orders || []);
+      const normalized = (data.orders || []).map((o) => ({
+        ...o,
+        derivedStatus: deriveStatus(o),
+      }));
+      setOrders(normalized);
     } catch (error) {
       toast.error('Failed to load orders');
       console.error(error);
@@ -41,13 +53,15 @@ const Orders = () => {
 
   const getStatusColor = (status) => {
     const colors = {
-      PENDING: 'warning',
-      CONFIRMED: 'info',
-      SHIPPED: 'primary',
-      DELIVERED: 'success',
-      CANCELLED: 'error',
+      pending: 'warning',
+      processing: 'info',
+      accepted: 'info',
+      shipped: 'primary',
+      in_transit: 'primary',
+      delivered: 'success',
+      cancelled: 'error',
     };
-    return colors[status] || 'default';
+    return colors[status?.toLowerCase()] || 'default';
   };
 
   if (loading) return <Layout><Loading /></Layout>;
@@ -104,8 +118,8 @@ const Orders = () => {
                   </TableCell>
                   <TableCell>
                     <Chip
-                      label={order.orderStatus}
-                      color={getStatusColor(order.orderStatus)}
+                      label={order.derivedStatus || order.orderStatus}
+                      color={getStatusColor(order.derivedStatus || order.orderStatus)}
                       size="small"
                     />
                   </TableCell>

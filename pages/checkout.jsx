@@ -6,7 +6,7 @@ import { Box, Container, Typography, Grid, Paper, Button, TextField } from '@mui
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
-import { orderService, cartService } from '@/services/api';
+import { orderService } from '@/services/api';
 import useCartStore from '@/store/cartStore';
 import useAuthStore from '@/store/authStore';
 import toast from 'react-hot-toast';
@@ -14,7 +14,7 @@ import toast from 'react-hot-toast';
 const Checkout = () => {
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
-  const { groupedByVendor, totalPrice, clearCart } = useCartStore();
+  const { groupedByVendor, totalPrice, clearCart, fetchCart } = useCartStore();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     address: '',
@@ -23,17 +23,135 @@ const Checkout = () => {
     country: '',
     phoneNumber: '',
     paymentMethod: 'card',
+    cardNumber: '',
+    cardExpiry: '',
+    cardCvv: '',
+    upiId: '',
+    bankName: '',
+    accountNumber: '',
   });
 
   useEffect(() => {
     if (!isAuthenticated) {
       router.push('/auth/login');
+      return;
     }
+    fetchCart().catch(() => {});
   }, [isAuthenticated]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const renderPaymentFields = () => {
+    if (formData.paymentMethod === 'card') {
+      return (
+        <Grid container spacing={2} sx={{ mt: 1 }}>
+          <Grid item xs={12}>
+            <TextField
+              label="Card Number"
+              name="cardNumber"
+              value={formData.cardNumber}
+              onChange={handleChange}
+              fullWidth
+              required
+              variant="outlined"
+              inputProps={{ maxLength: 19 }}
+              sx={{ '& .MuiOutlinedInput-root': { backgroundColor: '#f5f5f5', '&.Mui-focused fieldset': { borderColor: '#4CAF50' } } }}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <TextField
+              label="Expiry (MM/YY)"
+              name="cardExpiry"
+              value={formData.cardExpiry}
+              onChange={handleChange}
+              fullWidth
+              required
+              variant="outlined"
+              sx={{ '& .MuiOutlinedInput-root': { backgroundColor: '#f5f5f5', '&.Mui-focused fieldset': { borderColor: '#4CAF50' } } }}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <TextField
+              label="CVV"
+              name="cardCvv"
+              value={formData.cardCvv}
+              onChange={handleChange}
+              fullWidth
+              required
+              variant="outlined"
+              inputProps={{ maxLength: 4 }}
+              sx={{ '& .MuiOutlinedInput-root': { backgroundColor: '#f5f5f5', '&.Mui-focused fieldset': { borderColor: '#4CAF50' } } }}
+            />
+          </Grid>
+        </Grid>
+      );
+    }
+
+    if (formData.paymentMethod === 'upi') {
+      return (
+        <TextField
+          label="UPI ID"
+          name="upiId"
+          value={formData.upiId}
+          onChange={handleChange}
+          fullWidth
+          required
+          variant="outlined"
+          sx={{ mt: 1, '& .MuiOutlinedInput-root': { backgroundColor: '#f5f5f5', '&.Mui-focused fieldset': { borderColor: '#4CAF50' } } }}
+        />
+      );
+    }
+
+    if (formData.paymentMethod === 'netbanking') {
+      return (
+        <Grid container spacing={2} sx={{ mt: 1 }}>
+          <Grid item xs={12}>
+            <TextField
+              label="Bank Name"
+              name="bankName"
+              value={formData.bankName}
+              onChange={handleChange}
+              fullWidth
+              required
+              variant="outlined"
+              sx={{ '& .MuiOutlinedInput-root': { backgroundColor: '#f5f5f5', '&.Mui-focused fieldset': { borderColor: '#4CAF50' } } }}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              label="Account / Reference"
+              name="accountNumber"
+              value={formData.accountNumber}
+              onChange={handleChange}
+              fullWidth
+              required
+              variant="outlined"
+              sx={{ '& .MuiOutlinedInput-root': { backgroundColor: '#f5f5f5', '&.Mui-focused fieldset': { borderColor: '#4CAF50' } } }}
+            />
+          </Grid>
+        </Grid>
+      );
+    }
+
+    if (formData.paymentMethod === 'wallet') {
+      return (
+        <TextField
+          label="Wallet / Phone"
+          name="accountNumber"
+          value={formData.accountNumber}
+          onChange={handleChange}
+          fullWidth
+          required
+          variant="outlined"
+          sx={{ mt: 1, '& .MuiOutlinedInput-root': { backgroundColor: '#f5f5f5', '&.Mui-focused fieldset': { borderColor: '#4CAF50' } } }}
+        />
+      );
+    }
+
+    return null;
   };
 
   const handleSubmitOrder = async (e) => {
@@ -55,7 +173,7 @@ const Checkout = () => {
       };
 
       const { data } = await orderService.createOrder(orderData);
-      clearCart();
+      await clearCart();
       toast.success('Order created successfully!');
       router.push(`/orders/${data.order._id}`);
     } catch (error) {
@@ -197,6 +315,8 @@ const Checkout = () => {
                   <option value="netbanking">Net Banking</option>
                   <option value="wallet">Digital Wallet</option>
                 </TextField>
+
+                {renderPaymentFields()}
 
                 <Button
                   type="submit"

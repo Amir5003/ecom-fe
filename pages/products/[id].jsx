@@ -11,6 +11,7 @@ import { productService } from '@/services/api';
 import { UPLOAD_BASE_URL } from '@/config/endpoints';
 import useCartStore from '@/store/cartStore';
 import toast from 'react-hot-toast';
+import useAuthStore from '@/store/authStore';
 
 const ProductDetail = () => {
   const router = useRouter();
@@ -19,6 +20,7 @@ const ProductDetail = () => {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const { addItem } = useCartStore();
+  const { isAuthenticated } = useAuthStore();
 
   useEffect(() => {
     if (id) {
@@ -39,9 +41,20 @@ const ProductDetail = () => {
     }
   };
 
-  const handleAddToCart = () => {
-    addItem(product, quantity);
-    toast.success(`${product.name} added to cart!`);
+  const handleAddToCart = async () => {
+    if (!isAuthenticated) {
+      toast.error('Please login to add items');
+      router.push('/auth/login');
+      return;
+    }
+
+    try {
+      await addItem(product._id, quantity);
+      toast.success(`${product.name} added to cart!`);
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to add to cart';
+      toast.error(message);
+    }
   };
 
   if (loading) return <Layout><Loading /></Layout>;

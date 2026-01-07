@@ -33,7 +33,15 @@ const OrderDetail = () => {
     try {
       setLoading(true);
       const { data } = await orderService.getOrderById(id);
-      setOrder(data.order);
+      const orderData = data.order || data;
+
+      const vendorStatuses = (orderData.vendors || []).map((v) => (v.vendorStatus || '').toLowerCase());
+      let derivedStatus = (orderData.orderStatus || 'pending').toLowerCase();
+      if (vendorStatuses.includes('delivered')) derivedStatus = 'delivered';
+      else if (vendorStatuses.includes('in_transit') || vendorStatuses.includes('shipped')) derivedStatus = 'shipped';
+      else if (vendorStatuses.includes('processing') || vendorStatuses.includes('accepted')) derivedStatus = 'processing';
+
+      setOrder({ ...orderData, derivedStatus });
     } catch (error) {
       toast.error('Failed to load order');
       console.error(error);
@@ -44,12 +52,15 @@ const OrderDetail = () => {
 
   const getStatusStep = (status) => {
     const steps = {
-      PENDING: 0,
-      CONFIRMED: 1,
-      SHIPPED: 2,
-      DELIVERED: 3,
+      pending: 0,
+      processing: 1,
+      confirmed: 1,
+      shipped: 2,
+      in_transit: 2,
+      delivered: 3,
     };
-    return steps[status] || 0;
+    if (!status) return 0;
+    return steps[status.toLowerCase()] ?? 0;
   };
 
   if (loading) return <Layout><Loading /></Layout>;
@@ -80,7 +91,7 @@ const OrderDetail = () => {
             </Typography>
           </Box>
           <Box sx={{ textAlign: 'right' }}>
-            <Chip label={order.orderStatus} color="success" />
+            <Chip label={order.derivedStatus || order.orderStatus} color="success" />
             <Typography variant="h6" sx={{ fontWeight: 700, mt: 1, color: '#4CAF50' }}>
               ₹{order.totalPrice?.toFixed(2)}
             </Typography>
@@ -92,8 +103,8 @@ const OrderDetail = () => {
           <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
             Order Status
           </Typography>
-          <Stepper activeStep={getStatusStep(order.orderStatus)} sx={{ mb: 3 }}>
-            {['Pending', 'Confirmed', 'Shipped', 'Delivered'].map((label) => (
+          <Stepper activeStep={getStatusStep(order.derivedStatus || order.orderStatus)} sx={{ mb: 3 }}>
+            {['Pending', 'Processing', 'Shipped / In Transit', 'Delivered'].map((label) => (
               <Step key={label}>
                 <StepLabel>{label}</StepLabel>
               </Step>

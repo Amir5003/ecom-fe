@@ -7,7 +7,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import Loading from '@/components/Loading';
-import { cartService } from '@/services/api';
 import { buildImageUrl } from '@/utils/imageCompression';
 import useAuthStore from '@/store/authStore';
 import useCartStore from '@/store/cartStore';
@@ -17,7 +16,14 @@ import toast from 'react-hot-toast';
 const Cart = () => {
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
-  const { setCart, groupedByVendor, totalPrice } = useCartStore();
+  const {
+    fetchCart,
+    removeItem,
+    updateQuantity,
+    clearCart,
+    groupedByVendor,
+    totalPrice,
+  } = useCartStore();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -25,14 +31,13 @@ const Cart = () => {
       router.push('/auth/login');
       return;
     }
-    fetchCart();
+    loadCart();
   }, [isAuthenticated]);
 
-  const fetchCart = async () => {
+  const loadCart = async () => {
     try {
       setLoading(true);
-      const { data } = await cartService.getCart();
-      setCart(data);
+      await fetchCart();
     } catch (error) {
       toast.error('Failed to load cart');
       console.error(error);
@@ -43,8 +48,7 @@ const Cart = () => {
 
   const handleRemoveItem = async (productId) => {
     try {
-      await cartService.removeFromCart({ productId });
-      fetchCart();
+      await removeItem(productId);
       toast.success('Item removed from cart');
     } catch (error) {
       toast.error('Failed to remove item');
@@ -52,9 +56,11 @@ const Cart = () => {
   };
 
   const handleUpdateQuantity = async (productId, quantity) => {
+    if (quantity <= 0) {
+      return handleRemoveItem(productId);
+    }
     try {
-      await cartService.updateCartQuantity({ productId, quantity });
-      fetchCart();
+      await updateQuantity(productId, quantity);
     } catch (error) {
       toast.error('Failed to update quantity');
     }
@@ -62,8 +68,7 @@ const Cart = () => {
 
   const handleClearCart = async () => {
     try {
-      await cartService.clearCart();
-      setCart({ items: [], cartSummary: [], totalPrice: 0, totalItems: 0 });
+      await clearCart();
       toast.success('Cart cleared');
     } catch (error) {
       toast.error('Failed to clear cart');

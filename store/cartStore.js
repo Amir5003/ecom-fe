@@ -4,6 +4,7 @@
  */
 
 import { create } from 'zustand';
+import { cartService } from '@/services/api';
 
 const useCartStore = create((set, get) => ({
   items: [],
@@ -24,42 +25,90 @@ const useCartStore = create((set, get) => ({
     });
   },
 
-  // Add item to cart (locally until confirmed from API)
-  addItem: (product, quantity = 1) => {
-    const currentItems = get().items;
-    const existingItem = currentItems.find(
-      (item) => item.product._id === product._id
-    );
-
-    if (existingItem) {
-      existingItem.quantity += quantity;
-      set({ items: [...currentItems] });
-    } else {
-      set({ items: [...currentItems, { product, quantity }] });
+  // Fetch cart from backend and sync state
+  fetchCart: async () => {
+    set({ loading: true, error: null });
+    try {
+      const { data } = await cartService.getCart();
+      set({
+        items: data.items || [],
+        groupedByVendor: data.cartSummary || [],
+        totalPrice: data.totalPrice || 0,
+        totalItems: data.totalItems || 0,
+      });
+      return data;
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to load cart';
+      set({ error: message });
+      throw error;
+    } finally {
+      set({ loading: false });
     }
   },
 
-  // Remove item from cart
-  removeItem: (productId) => {
-    set({ items: get().items.filter((item) => item.product._id !== productId) });
+  // Add item via API then refresh cart
+  addItem: async (productId, quantity = 1) => {
+    set({ loading: true, error: null });
+    try {
+      await cartService.addToCart({ productId, quantity });
+      return await get().fetchCart();
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to add to cart';
+      set({ error: message });
+      throw error;
+    } finally {
+      set({ loading: false });
+    }
   },
 
-  // Update item quantity
-  updateQuantity: (productId, quantity) => {
-    const items = get().items.map((item) =>
-      item.product._id === productId ? { ...item, quantity } : item
-    );
-    set({ items });
+  // Remove item then refresh cart
+  removeItem: async (productId) => {
+    set({ loading: true, error: null });
+    try {
+      await cartService.removeFromCart({ productId });
+      return await get().fetchCart();
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to remove item';
+      set({ error: message });
+      throw error;
+    } finally {
+      set({ loading: false });
+    }
   },
 
-  // Clear cart
-  clearCart: () => {
-    set({
-      items: [],
-      groupedByVendor: [],
-      totalPrice: 0,
-      totalItems: 0,
-    });
+  // Update quantity via API then refresh cart
+  updateQuantity: async (productId, quantity) => {
+    set({ loading: true, error: null });
+    try {
+      await cartService.updateCartQuantity({ productId, quantity });
+      return await get().fetchCart();
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to update quantity';
+      set({ error: message });
+      throw error;
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  // Clear cart via API and local state
+  clearCart: async () => {
+    set({ loading: true, error: null });
+    try {
+      await cartService.clearCart();
+      set({
+        items: [],
+        groupedByVendor: [],
+        totalPrice: 0,
+        totalItems: 0,
+      });
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to clear cart';
+      set({ error: message });
+      throw error;
+    } finally {
+      set({ loading: false });
+    }
   },
 
   // Get cart summary by vendor
