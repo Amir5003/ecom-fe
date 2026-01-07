@@ -4,9 +4,10 @@
 
 import { CircularProgress, Box } from '@mui/material';
 
-const Loading = ({ message = 'Loading...' }) => {
+const Loading = ({ message = 'Loading...', ...rest }) => {
   return (
     <Box
+      {...rest}
       sx={{
         display: 'flex',
         flexDirection: 'column',

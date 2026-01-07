@@ -30,7 +30,24 @@ const VendorDashboard = () => {
     try {
       setLoading(true);
       const { data } = await vendorService.getDashboard();
-      setDashboard(data.dashboard);
+      const payload = data?.data || data?.dashboard || data;
+      const vendor = payload?.vendor || {};
+      const stats = payload?.stats || {};
+      const wallet = payload?.wallet || {};
+
+      setDashboard({
+        storeSlug: vendor.storeSlug,
+        businessName: vendor.businessName,
+        isApproved: vendor.isApproved,
+        isActive: vendor.isActive,
+        commissionPercentage: vendor.commissionPercentage,
+        totalProducts: stats.totalProducts,
+        totalOrders: stats.totalOrders,
+        totalEarnings: wallet.totalEarnings ?? stats.totalSales ?? 0,
+        pendingOrders: stats.pendingOrders ?? 0,
+        rating: stats.avgRating,
+        totalReviews: stats.totalReviews,
+      });
     } catch (error) {
       toast.error('Failed to load dashboard');
       console.error(error);
@@ -39,10 +56,17 @@ const VendorDashboard = () => {
     }
   };
 
+  const handleProductsClick = () => {
+    if ((dashboard?.totalProducts || 0) === 0) {
+      toast('No products yet. Add your first product.', { icon: 'ℹ️' });
+    }
+    router.push('/vendor/products');
+  };
+
   if (loading) return <Layout><Loading /></Layout>;
 
   const stats = [
-    { label: 'Total Products', value: dashboard?.totalProducts || 0, color: '#4CAF50' },
+    { label: 'Total Products', value: dashboard?.totalProducts || 0, color: '#4CAF50', onClick: handleProductsClick },
     { label: 'Total Orders', value: dashboard?.totalOrders || 0, color: '#2196F3' },
     { label: 'Total Earnings', value: `₹${(dashboard?.totalEarnings || 0).toFixed(2)}`, color: '#FF9800' },
     { label: 'Pending Orders', value: dashboard?.pendingOrders || 0, color: '#F44336' },
@@ -66,7 +90,15 @@ const VendorDashboard = () => {
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {stats.map((stat, idx) => (
             <Grid item xs={12} sm={6} md={3} key={idx}>
-              <Card elevation={0} sx={{ backgroundColor: '#fafafa', borderRadius: '12px' }}>
+              <Card
+                elevation={0}
+                sx={{
+                  backgroundColor: '#fafafa',
+                  borderRadius: '12px',
+                  cursor: stat.onClick ? 'pointer' : 'default',
+                }}
+                onClick={stat.onClick}
+              >
                 <CardContent>
                   <Typography color="textSecondary" variant="body2" sx={{ mb: 1 }}>
                     {stat.label}
